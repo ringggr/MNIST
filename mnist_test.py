@@ -8,7 +8,7 @@ from keras.datasets import mnist
 
 def load_data():
 	(x_train, y_train), (x_test, y_test) = mnist.load_data(path='data')
-	number = 60000
+	number = 10000
 	x_train = x_train[0:number]
 	y_train = y_train[0:number]
 	x_train = x_train.reshape(number, 28 * 28)
@@ -20,9 +20,16 @@ def load_data():
 	y_test = np_utils.to_categorical(y_test, 10)
 	x_train = x_train
 	x_test = x_test
-	# x_test = np.random.normal(x_test)
+
+
+	# x_test = np.random.normal(x_test)   
+	# VERY IMPORTANT !!!!!!!!!
 	x_train = x_train / 255
 	x_test = x_test / 255
+
+	# setting noise
+	x_test = np.random.normal(x_test)
+
 	return (x_train, y_train), (x_test, y_test)
 
 
@@ -31,16 +38,31 @@ def load_data():
 
 
 model = Sequential()
-model.add(Dense(input_dim = 28 * 28, units = 689, activation = 'sigmoid'))
-model.add(Dense(units = 689, activation = 'sigmoid'))
-model.add(Dense(units = 689, activation = 'sigmoid'))
-model.add(Dense(units = 689, activation = 'sigmoid'))
-model.add(Dense(units = 689, activation = 'sigmoid'))
+model.add(Dense(input_dim = 28 * 28, units = 689, activation = 'relu'))
+model.add(Dropout(0.7))
+model.add(Dense(units = 689, activation = 'relu'))
+model.add(Dropout(0.7))
+model.add(Dense(units = 689, activation = 'relu'))
+model.add(Dropout(0.7))
+
+# for i in range(10):
+# 	model.add(Dense(units = 689, activation = 'relu'))	
+
 model.add(Dense(units = 10, activation = 'softmax'))
 
-model.compile(loss='mse', optimizer = SGD(lr=0.1), metrics = ['accuracy'])
+# mean square error
+# model.compile(loss='mse', optimizer = SGD(lr=0.1), metrics = ['accuracy'])
 
+# categorical_crossentropy
+model.compile(loss='categorical_crossentropy', optimizer = 'adam', metrics = ['accuracy'])
+
+# batch_size more large, performance more poor
 model.fit(x_train, y_train, batch_size = 100, epochs = 20)
 
-result = model.evaluate(x_test, y_test)
-print '\nTest accuracy: ', result[1]
+result = model.evaluate(x_train, y_train, batch_size = 100000)
+print ('Train accuracy: ', result[1])
+
+result = model.evaluate(x_test, y_test, batch_size = 100000)
+print ('Test accuracy: ', result[1])
+
+
